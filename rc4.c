@@ -6,21 +6,20 @@
 uncigned_char  * PRNG(u_char *State, int msglength);
 int main(int argc, char *argv[]) {
 
-int SizeVectorTest = 4112;  
-u_char key[]={0x01,0x02,0x03,0x04,0x05};	
+int SizeVectorTest = 4112;  // tamaño para que muestre todo el vector de prueba
+u_char key[]={0x01,0x02,0x03,0x04,0x05};	//aqui se asigna cualquier llave 
 int keySize = sizeof(key)/sizeof(key[0]);
-
 
 int i;
 uncigned_char  State[256];
-uncigned_char  *keystream;
+uncigned_char  *keystream; 
 
 S-BOX(State);
 
 ksa(State, key, keySize);
 
 keystream = prng(State, SizeVectorTest);
-
+//Se imprime la keystream
 printf("Keystream:\n");
 for(i=0; i<SizeVectorTest; i++) {
 if(i%16==0){
@@ -33,13 +32,11 @@ else
 printf("%x ", keystream[i]);
 }
 
-
-
 exit(0);
 }
 
-
-void S-BOX(u_char *State) {
+//el S-box array es llenado con valores secuenciales desde 0-255
+void S-BOX(u_char *State) { 
 int i;
 for(i=0; i<256; i++) {
 State[i] = i;
@@ -47,7 +44,7 @@ State[i] = i;
 return;
 }
 
-
+//la S-box es intercambiada 
 void Intercambio(u_char *i, u_char *j) {
 u_char temp;
 
@@ -56,7 +53,7 @@ temp = *i;
 *j = temp;
 }
 
-
+//Key Scheduling Algorithm
 void ksa(u_char *State, u_char *key, int keySize) {
 int i, j=0;
 
@@ -71,7 +68,7 @@ Intercambio(&State[i], &State[j]);
 return;
 }
 
-
+//Pseudo-Random Generation Algorithm 
 uncigned_char * PRNG(u_char *State, int SizeVectorTest) {
 int i=0, j=0, k;
 
