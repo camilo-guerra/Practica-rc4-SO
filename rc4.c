@@ -1,52 +1,92 @@
+#include <stdlib.h>
 #include <stdio.h>
-/*
-Output should be:
-EB 9F 77 81 B7 34 CA 72 A7
-*/
+#include <string.h>
 
-int main() 
-{
-   unsigned char state[256],key[]={"Key"},stream[1024]; 
-   int len=9,idx; 
-   
-   ksa(state,key,3); 
-   prga(state,stream,len); 
-   
-   for (idx=0; idx < len; idx++) 
-      printf("%02X ",stream[idx]); 
-   
-   return 0; 
+
+uncigned_char  * PRNG(u_char *State, int msglength);
+int main(int argc, char *argv[]) {
+
+int SizeVectorTest = 4112;  
+u_char key[]={0x01,0x02,0x03,0x04,0x05};	
+int keySize = sizeof(key)/sizeof(key[0]);
+
+
+int i;
+uncigned_char  State[256];
+uncigned_char  *keystream;
+
+S-BOX(State);
+
+ksa(State, key, keySize);
+
+keystream = prng(State, SizeVectorTest);
+
+printf("Keystream:\n");
+for(i=0; i<SizeVectorTest; i++) {
+if(i%16==0){
+printf("\n");
+printf("%d:\t", i);
+}
+if(keystream[i]<16)
+printf("0%x ", keystream[i]);
+else
+printf("%x ", keystream[i]);
 }
 
-void ksa(unsigned char state[], unsigned char key[], int len)
-{
-   int i,j=0,t; 
-   
-   for (i=0; i < 256; ++i)
-      state[i] = i; 
-   for (i=0; i < 256; ++i) {
-      j = (j + state[i] + key[i % len]) % 256; 
-      t = state[i]; 
-      state[i] = state[j]; 
-      state[j] = t; 
-   }   
+
+
+exit(0);
 }
 
-// Pseudo-Random Generator Algorithm 
-// Input: state - the state used to generate the keystream 
-//        out - Must be of at least "len" length
-//        len - number of bytes to generate 
-void prga(unsigned char state[], unsigned char out[], int len)
-{  
-   int i=0,j=0,x,t; 
-   unsigned char key; 
-   
-   for (x=0; x < len; ++x)  {
-      i = (i + 1) % 256; 
-      j = (j + state[i]) % 256; 
-      t = state[i]; 
-      state[i] = state[j]; 
-      state[j] = t; 
-      out[x] = state[(state[i] + state[j]) % 256];
-   }   
-}  
+
+void S-BOX(u_char *State) {
+int i;
+for(i=0; i<256; i++) {
+State[i] = i;
+}
+return;
+}
+
+
+void Intercambio(u_char *i, u_char *j) {
+u_char temp;
+
+temp = *i;
+*i = *j;
+*j = temp;
+}
+
+
+void ksa(u_char *State, u_char *key, int keySize) {
+int i, j=0;
+
+
+printf("\n\n Keylenght %d \n\n", keySize);
+
+
+for(i=0; i<256; i++) {
+j = (j + State[i] + key[i%keySize]) % 256;
+Intercambio(&State[i], &State[j]);
+}
+return;
+}
+
+
+uncigned_char * PRNG(u_char *State, int SizeVectorTest) {
+int i=0, j=0, k;
+
+u_char *keystream;
+
+keystream = (u_char *)malloc(sizeof(u_char)*SizeVectorTest);
+
+for(k=0; k<SizeVectorTest; k++) {
+i = (i+1) % 256;
+j = (j+State[i]) % 256;
+
+Intercambio(&State[i], &State[j]);
+
+keystream[k] = State[(State[i]+State[j]) % 256];
+}
+return keystream;
+}
+
